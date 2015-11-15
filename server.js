@@ -34,10 +34,10 @@ REST.prototype.connectMysql = function() {
     var self = this;
     var pool      =    mysql.createPool({
         connectionLimit : 100,
-        host     : 'localhost',
-        user     : 'root',
-        password : 'r00tbeer',
-        database : 'bonder',
+        host     : 'us-cdbr-iron-east-03.cleardb.net',
+        user     : 'b581c4263c48e1',
+        password : '37075df0',
+        database : 'heroku_bfba1a202047a6a',
         debug    :  false
     });
     pool.getConnection(function(err,connection){
