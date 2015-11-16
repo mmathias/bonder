@@ -14,7 +14,6 @@ REST_ROUTER.prototype.handleRoutes = function(router, connection, md5) {
         var query = "INSERT INTO ??(??,??) VALUES (?,?)";
         var table = ["user_login","user_email","user_password",req.body.email,md5(req.body.password)];
         query = mysql.format(query,table);
-        console.log(query);
         connection.query(query,function(err,rows){
             if(err) {
                 console.log(err);
@@ -69,6 +68,77 @@ REST_ROUTER.prototype.handleRoutes = function(router, connection, md5) {
                 res.json({"Error" : true, "Message" : "Error executing MySQL query"});
             } else {
                 res.json({"Error" : false, "Message" : "Deleted the user with email "+req.params.email});
+            }
+        });
+    });
+
+
+    // Questions
+
+    router.post("/questions",function(req,res){
+        var query = "INSERT INTO ??(??,??,??) VALUES (?,?,?)";
+        var table = [
+          "questions","question","firstOption","secondOption",
+          req.body.question,req.body.firstOption,req.body.secondOption];
+        query = mysql.format(query,table);
+        connection.query(query,function(err,rows){
+            if(err) {
+                console.log(err);
+                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
+            } else {
+                res.json({"Error" : false, "Message" : "Question Added!"});
+            }
+        });
+    });
+    router.get("/questions",function(req,res){
+        var query = "SELECT * FROM ??";
+        var table = ["questions"];
+        query = mysql.format(query,table);
+        connection.query(query,function(err,rows){
+            if(err) {
+                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
+            } else {
+                res.json({"Error" : false, "Message" : "Success", "Questions" : rows});
+            }
+        });
+    });
+    router.get("/questions/:question_id",function(req,res){
+        var query = "SELECT * FROM ?? WHERE ??=?";
+        var table = ["questions","id",req.params.question_id];
+        query = mysql.format(query,table);
+        connection.query(query,function(err,rows){
+            if(err) {
+                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
+            } else {
+                res.json({"Error" : false, "Message" : "Success", "Questions" : rows});
+            }
+        });
+    });
+    router.put("/questions",function(req,res){
+        var query = "UPDATE ?? SET ?? = ?, ?? = ?, ?? = ? WHERE ?? = ?";
+        var table = ["questions",
+          "question", req.body.question,
+          "firstOption", req.body.firstOption,
+          "secondOption", req.body.secondOption,
+          "id",req.body.id];
+        query = mysql.format(query,table);
+        connection.query(query,function(err,rows){
+            if(err) {
+                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
+            } else {
+                res.json({"Error" : false, "Message" : "Updated the question ID "+req.body.id});
+            }
+        });
+    });
+    router.delete("/questions/:id",function(req,res){
+        var query = "DELETE from ?? WHERE ??=?";
+        var table = ["questions","id",req.params.id];
+        query = mysql.format(query,table);
+        connection.query(query,function(err,rows){
+            if(err) {
+                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
+            } else {
+                res.json({"Error" : false, "Message" : "Deleted the question with ID "+req.params.id});
             }
         });
     });
