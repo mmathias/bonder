@@ -16,7 +16,7 @@ app.set('port', (process.env.PORT || 3000))
 app.use(function (req, res, next) {
 
     // Website you wish to allow to connect
-    res.setHeader('Access-Control-Allow-Origin', 'https://bonderapi.herokuapp.com');
+    res.setHeader('Access-Control-Allow-Origin', 'https://superbonder.herokuapp.com');
 
     // Request methods you wish to allow
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
