@@ -19,7 +19,8 @@ REST_ROUTER.prototype.handleRoutes = function(router, connection, md5) {
                 console.log(err);
                 res.json({"Error" : true, "Message" : "Error executing MySQL query"});
             } else {
-                res.json({"Error" : false, "Message" : "User Added !"});
+                console.log(rows);
+                res.json({"Error" : false, "Message" : "User Added !", "userId": rows.insertId});
             }
         });
     });
@@ -27,12 +28,17 @@ REST_ROUTER.prototype.handleRoutes = function(router, connection, md5) {
         var query = "SELECT * FROM ??";
         var table = ["user_login"];
         query = mysql.format(query,table);
+        console.log(query);
         connection.query(query,function(err,rows){
             if(err) {
+                console.log(err);
                 res.json({"Error" : true, "Message" : "Error executing MySQL query"});
             } else {
                 res.json({"Error" : false, "Message" : "Success", "Users" : rows});
             }
+        });
+        connection.on('error', function(err) {
+            console.log('Error: ' + err);
         });
     });
     router.get("/users/:user_id",function(req,res){
@@ -49,8 +55,9 @@ REST_ROUTER.prototype.handleRoutes = function(router, connection, md5) {
     });
     router.post("/users/login",function(req,res){
         var query = "SELECT * FROM ?? WHERE ??=? AND ??=?";
-        var table = ["user_login","user_email", req.params.user_email, "user_password", req.params.user_password];
+        var table = ["user_login","user_email", req.body.email, "user_password", md5(req.body.password)];
         query = mysql.format(query,table);
+        console.log(query);
         connection.query(query,function(err,rows){
             if(err) {
                 res.json({"Error" : true, "Message" : "Error executing MySQL query"});
@@ -88,10 +95,8 @@ REST_ROUTER.prototype.handleRoutes = function(router, connection, md5) {
     // Questions
 
     router.post("/questions",function(req,res){
-        var query = "INSERT INTO ??(??,??,??) VALUES (?,?,?)";
-        var table = [
-          "questions","question","firstOption","secondOption",
-          req.body.question,req.body.firstOption,req.body.secondOption];
+        var query = "INSERT INTO ??(??) VALUES (?)";
+        var table = ["questions","question",req.body.question];
         query = mysql.format(query,table);
         connection.query(query,function(err,rows){
             if(err) {
@@ -127,18 +132,16 @@ REST_ROUTER.prototype.handleRoutes = function(router, connection, md5) {
         });
     });
     router.put("/questions",function(req,res){
-        var query = "UPDATE ?? SET ?? = ?, ?? = ?, ?? = ? WHERE ?? = ?";
+        var query = "UPDATE ?? SET ?? = ? WHERE ?? = ?";
         var table = ["questions",
           "question", req.body.question,
-          "firstOption", req.body.firstOption,
-          "secondOption", req.body.secondOption,
           "id",req.body.id];
         query = mysql.format(query,table);
         connection.query(query,function(err,rows){
             if(err) {
                 res.json({"Error" : true, "Message" : "Error executing MySQL query"});
             } else {
-                res.json({"Error" : false, "Message" : "Updated the question ID "+req.body.id});
+                res.json({"Error" : false, "Message" : "Updated the question: "+req.body.question});
             }
         });
     });
@@ -151,6 +154,71 @@ REST_ROUTER.prototype.handleRoutes = function(router, connection, md5) {
                 res.json({"Error" : true, "Message" : "Error executing MySQL query"});
             } else {
                 res.json({"Error" : false, "Message" : "Deleted the question with ID "+req.params.id});
+            }
+        });
+    });
+
+    // Options
+    router.get("/questions/:question_id/options",function(req,res){
+        var query = "SELECT * FROM ?? WHERE ??=?";
+        var table = ["options","question_id",req.params.question_id];
+        query = mysql.format(query,table);
+        connection.query(query,function(err,rows){
+            if(err) {
+                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
+            } else {
+                res.json({"Error" : false, "Message" : "Success", "Options" : rows});
+            }
+        });
+    });
+
+    // Answers
+    router.post("/answers",function(req,res){
+        var query = "INSERT INTO ??(??, ??, ??, ??) VALUES (?, ?, ?, ?)";
+        var table = ["answers",
+            "question_id", "user_id", "option_id", "challenged_user_id",
+            req.body.question_id, req.body.user_id, req.body.option_id, req.body.challenged_user_id
+        ];
+        query = mysql.format(query,table);
+        connection.query(query,function(err,rows){
+            if(err) {
+                console.log(err);
+                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
+            } else {
+                res.json({"Error" : false, "Message" : "Answer Added!"});
+            }
+        });
+    });
+    router.get("/users/:userId/answers",function(req,res){
+        var query = "SELECT * FROM answers hisAnswers WHERE hisAnswers.user_id = ? AND hisAnswers.challenged_user_id IS NULL";
+        var table = [
+            req.params.userId
+        ];
+        query = mysql.format(query,table);
+        connection.query(query,function(err,rows){
+            if(err) {
+                console.log(err);
+                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
+            } else {
+                res.json({"Error" : false, "Message" : "Score is ready!", "Answers": rows});
+            }
+        });
+    });
+
+    // Score
+    router.get("/users/:userId/score/:challengedUserId",function(req,res){
+        var query = "SELECT count(*) as score FROM answers hisAnswers, answers myAnswers WHERE hisAnswers.question_id = myAnswers.question_id AND hisAnswers.user_id = ? AND hisAnswers.challenged_user_id IS NULL AND myAnswers.user_id = ? AND myAnswers.challenged_user_id = ? AND hisAnswers.option_id = myAnswers.option_id";
+        var table = [
+            req.params.challengedUserId, req.params.userId, req.params.challengedUserId
+        ];
+        query = mysql.format(query,table);
+        console.log(query);
+        connection.query(query,function(err,rows){
+            if(err) {
+                console.log(err);
+                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
+            } else {
+                res.json({"Error" : false, "Message" : "Score is ready!", "Score": rows});
             }
         });
     });

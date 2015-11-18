@@ -44,7 +44,9 @@ REST.prototype.connectMysql = function() {
     });
     pool.getConnection(function(err,connection){
         if(err) {
-          self.stop(err);
+          connection.release();
+          console.log("Error in connection database");
+          return;
         } else {
           self.configureExpress(connection);
         }
