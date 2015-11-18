@@ -11,8 +11,8 @@ REST_ROUTER.prototype.handleRoutes = function(router, connection, md5) {
     });
 
     router.post("/users",function(req,res){
-        var query = "INSERT INTO ??(??,??) VALUES (?,?)";
-        var table = ["user_login","user_email","user_password",req.body.email,md5(req.body.password)];
+        var query = "INSERT INTO ??(??,??,??) VALUES (?,?,?)";
+        var table = ["user_login","user_email","user_password","name", req.body.email,md5(req.body.password), req.body.name];
         query = mysql.format(query,table);
         connection.query(query,function(err,rows){
             if(err) {
