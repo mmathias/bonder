@@ -119,6 +119,24 @@ REST_ROUTER.prototype.handleRoutes = function(router, connection, md5) {
             }
         });
     });
+    router.get("/users/:userId/questions",function(req,res){
+        var query = "SELECT * FROM questions q WHERE q.id NOT IN (SELECT question_id FROM answers WHERE user_id = ? AND challenged_user_id IS NULL)";
+        var table = [req.params.userId];
+        if (req.query.challenged !== 'null') {
+            query = "SELECT * FROM questions q WHERE q.id NOT IN (SELECT question_id FROM answers WHERE user_id = ? AND challenged_user_id = ?)";
+            table = [req.params.userId, req.query.challenged];
+        }
+
+        query = mysql.format(query,table);
+        console.log(query);
+        connection.query(query,function(err,rows){
+            if(err) {
+                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
+            } else {
+                res.json({"Error" : false, "Message" : "Success", "Questions" : rows});
+            }
+        });
+    });
     router.get("/questions/:question_id",function(req,res){
         var query = "SELECT * FROM ?? WHERE ??=?";
         var table = ["questions","id",req.params.question_id];
@@ -177,7 +195,7 @@ REST_ROUTER.prototype.handleRoutes = function(router, connection, md5) {
         var query = "INSERT INTO ??(??, ??, ??, ??) VALUES (?, ?, ?, ?)";
         var table = ["answers",
             "question_id", "user_id", "option_id", "challenged_user_id",
-            req.body.question_id, req.body.user_id, req.body.option_id, req.body.challenged_user_id
+            req.body.question_id, req.body.user_id, req.body.option_id, req.body.challenged_user_id === 'null' ? null : req.body.challenged_user_id
         ];
         query = mysql.format(query,table);
         connection.query(query,function(err,rows){

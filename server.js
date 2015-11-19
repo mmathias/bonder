@@ -42,24 +42,17 @@ REST.prototype.connectMysql = function() {
         database : 'heroku_bfba1a202047a6a',
         debug    :  false
     });
-    pool.getConnection(function(err,connection){
-        if(err) {
-          connection.release();
-          console.log("Error in connection database");
-          return;
-        } else {
-          self.configureExpress(connection);
-        }
-    });
+
+    self.configureExpress(pool);
 }
 
-REST.prototype.configureExpress = function(connection) {
+REST.prototype.configureExpress = function(pool) {
       var self = this;
       app.use(bodyParser.urlencoded({ extended: true }));
       app.use(bodyParser.json());
       var router = express.Router();
       app.use('/api', router);
-      var rest_router = new rest(router,connection,md5);
+      var rest_router = new rest(router,pool,md5);
       self.startServer();
 }
 
