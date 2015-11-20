@@ -24,7 +24,7 @@ REST_ROUTER.prototype.handleRoutes = function(router, connection, md5) {
             }
         });
     });
-    router.get("/users",function(req,res){
+    router.get("/users", function(req, res) {
         var query = "SELECT * FROM ??";
         var table = ["user_login"];
         query = mysql.format(query,table);
@@ -237,6 +237,34 @@ REST_ROUTER.prototype.handleRoutes = function(router, connection, md5) {
                 res.json({"Error" : true, "Message" : "Error executing MySQL query"});
             } else {
                 res.json({"Error" : false, "Message" : "Score is ready!", "Score": rows});
+            }
+        });
+    });
+
+    //Events
+    router.get("/events",function(req,res){
+        var query = "SELECT * FROM ??";
+        var table = ["events"];
+        query = mysql.format(query,table);
+        connection.query(query,function(err,rows){
+            if(err) {
+                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
+            } else {
+                res.json({"Error" : false, "Message" : "Success", "Events" : rows});
+            }
+        });
+    });
+    router.get("/events/:eventId",function(req,res){
+        var query = "SELECT * FROM events WHERE id=?";
+        var table = [req.params.eventId];
+        query = mysql.format(query,table);
+        console.log(query);
+        connection.query(query,function(err,rows){
+            console.log(err);
+            if(err) {
+                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
+            } else {
+                res.json({"Error" : false, "Message" : "Success", "Event" : rows});
             }
         });
     });
