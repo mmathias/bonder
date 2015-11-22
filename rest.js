@@ -269,6 +269,37 @@ REST_ROUTER.prototype.handleRoutes = function(router, connection, md5) {
             }
         });
     });
+
+    //Invitations
+    router.post("/invitations",function(req,res){
+        var query = "INSERT INTO ??(??, ??, ??) VALUES (?, ?, ?)";
+        var table = ["invitations",
+            "event_id", "invited_id", "inviter_id",
+            req.body.event_id, req.body.invited_id, req.body.inviter_id
+        ];
+        query = mysql.format(query,table);
+        connection.query(query,function(err,rows){
+            if(err) {
+                console.log(err);
+                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
+            } else {
+                res.json({"Error" : false, "Message" : "Invitation Added!"});
+            }
+        });
+    });
+    router.get("/invitations/:invitedId",function(req,res){
+        var query = "SELECT * FROM invitations WHERE invited_id = ??";
+        var table = [req.params.invited_id];
+        query = mysql.format(query,table);
+        connection.query(query,function(err,rows){
+            if(err) {
+                console.log(err);
+                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
+            } else {
+                res.json({"Error" : false, "Message" : "Invitation Added!"});
+            }
+        });
+    });
 }
 
 module.exports = REST_ROUTER;
