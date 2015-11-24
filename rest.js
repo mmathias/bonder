@@ -237,6 +237,7 @@ REST_ROUTER.prototype.handleRoutes = function(router, connection, md5) {
                 console.log(err);
                 res.json({"Error" : true, "Message" : "Error executing MySQL query"});
             } else {
+                rows[0].challenged_user_id = req.params.challengedUserId;
                 res.json({"Error" : false, "Message" : "Score is ready!", "Score": rows});
             }
         });
